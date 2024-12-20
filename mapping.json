@@ -1,0 +1,29 @@
+{
+  "name": "process_claim",
+  "description": "processing of medical claim",
+  "steps": [
+    {
+      "name": "user_authentication",
+      "mode": "HTTP",
+      "val": {
+        "method": "POST",
+        "url": "https://dummyjson.com/products/add"
+      }
+    },
+    {
+      "name": "user_authorization2",
+      "mode": "HTTP",
+      "transform": false,
+      "requestTransform": {
+        "spec": {
+          "username": "user_authentication.response.username",
+          "userId": "user_authentication.response.id"
+        }
+      },
+      "val": {
+        "method": "POST",
+        "url": "https://1dummyjson.com/products/add"
+      }
+    }
+  ]
+}

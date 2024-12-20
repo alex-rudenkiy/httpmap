@@ -1,0 +1,107 @@
+{
+  "AtlasMapping": {
+    "jsonType": "io.atlasmap.v2.AtlasMapping",
+    "dataSource": [
+      {
+        "jsonType": "io.atlasmap.json.v2.JsonDataSource",
+        "id": "kafka-3c3afd7f-ac7b-4a08-b68e-58cf98ed6b19",
+        "name": "kafka.svc",
+        "description": "Source document kafka type: JSON",
+        "uri": "atlas:json:kafka-3c3afd7f-ac7b-4a08-b68e-58cf98ed6b19",
+        "dataSourceType": "SOURCE"
+      },
+      {
+        "jsonType": "io.atlasmap.json.v2.JsonDataSource",
+        "id": "artemis-027bad92-549d-4787-8724-6fc5c14a1664",
+        "name": "artemis.svc",
+        "description": "Target document artemis type: JSON",
+        "uri": "atlas:json:artemis-027bad92-549d-4787-8724-6fc5c14a1664",
+        "dataSourceType": "TARGET"
+      }
+    ],
+    "mappings": {
+      "mapping": [
+        {
+          "jsonType": "io.atlasmap.v2.Mapping",
+          "id": "mapping.926461",
+          "inputField": [
+            {
+              "jsonType": "io.atlasmap.json.v2.JsonField",
+              "name": "booleanPrimitive",
+              "path": "/booleanPrimitive",
+              "fieldType": "STRING",
+              "docId": "kafka-3c3afd7f-ac7b-4a08-b68e-58cf98ed6b19",
+              "actions": [
+                {
+                  "index": "mapping.542960",
+                  "@type": "CopyTo"
+                }
+              ]
+            }
+          ],
+          "outputField": [
+            {
+              "jsonType": "io.atlasmap.json.v2.JsonField",
+              "name": "apple",
+              "path": "/apple",
+              "fieldType": "STRING",
+              "docId": "artemis-027bad92-549d-4787-8724-6fc5c14a1664",
+              "index": 0
+            },
+            {
+              "jsonType": "io.atlasmap.json.v2.JsonField",
+              "name": "car",
+              "path": "/car",
+              "fieldType": "STRING",
+              "docId": "artemis-027bad92-549d-4787-8724-6fc5c14a1664",
+              "index": 1
+            },
+            {
+              "jsonType": "io.atlasmap.json.v2.JsonField",
+              "name": "pet",
+              "path": "/pet",
+              "fieldType": "STRING",
+              "docId": "artemis-027bad92-549d-4787-8724-6fc5c14a1664",
+              "index": 2
+            }
+          ],
+          "priority": 0
+        },
+        {
+          "jsonType": "io.atlasmap.v2.Mapping",
+          "id": "mapping.542960",
+          "inputField": [
+            {
+              "jsonType": "io.atlasmap.json.v2.JsonField",
+              "name": "booleanPrimitive",
+              "path": "/booleanPrimitive",
+              "fieldType": "STRING",
+              "docId": "kafka-3c3afd7f-ac7b-4a08-b68e-58cf98ed6b19"
+            }
+          ],
+          "outputField": [
+            {
+              "jsonType": "io.atlasmap.json.v2.JsonField",
+              "name": "dog",
+              "path": "/dog",
+              "fieldType": "STRING",
+              "docId": "artemis-027bad92-549d-4787-8724-6fc5c14a1664"
+            }
+          ],
+          "priority": 0
+        }
+      ]
+    },
+    "name": "UI.0",
+    "version": "0.1.0",
+    "lookupTables": {
+      "lookupTable": []
+    },
+    "constants": {
+      "constant": []
+    },
+    "properties": {
+      "property": []
+    }
+  }
+}
