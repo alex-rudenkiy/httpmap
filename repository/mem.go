@@ -4,7 +4,6 @@ import (
 	"clamp-core/models"
 	"errors"
 	"github.com/samber/lo"
-	"log"
 	"sync"
 
 	"github.com/google/uuid"
@@ -105,9 +104,9 @@ func (repo *inMemoryRepository) FindStepStatusByServiceRequestID(serviceRequestI
 	defer repo.lock.RUnlock()
 
 	statuses, exists := repo.stepStatuses[serviceRequestID]
-	println()
+	//println(serviceRequestID.String())
 	if !exists {
-		return nil, nil
+		return nil, errors.New("stepStatus not found")
 	}
 	return statuses, nil
 }
@@ -115,6 +114,8 @@ func (repo *inMemoryRepository) FindStepStatusByServiceRequestID(serviceRequestI
 func (repo *inMemoryRepository) SaveStepStatus(stepStatus *models.StepsStatus) (*models.StepsStatus, error) {
 	repo.lock.Lock()
 	defer repo.lock.Unlock()
+
+	//println(stepStatus.ServiceRequestID.String())
 
 	repo.stepStatuses[stepStatus.ServiceRequestID] = lo.UniqBy(append(repo.stepStatuses[stepStatus.ServiceRequestID], stepStatus), func(s *models.StepsStatus) int {
 		return s.StepID
@@ -151,8 +152,8 @@ func (repo *inMemoryRepository) DeleteWorkflowByName(workflowName string) error 
 func (repo *inMemoryRepository) SaveWorkflow(workflowReq *models.Workflow) (*models.Workflow, error) {
 	repo.lock.Lock()
 	defer repo.lock.Unlock()
-	log.Println("------------------------------")
-	log.Println(workflowReq.Name)
+	//log.Println("------------------------------")
+	//log.Println(workflowReq.Name)
 	repo.workflows[workflowReq.Name] = workflowReq
 	return workflowReq, nil
 }

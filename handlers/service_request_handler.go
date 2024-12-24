@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -56,6 +55,7 @@ func createServiceRequestHandler() gin.HandlerFunc {
 		log.Debug("Create service request handler")
 		workflowName := c.Param("workflowName")
 		serviceRequestCounter.WithLabelValues(workflowName).Inc()
+
 		_, err := services.FindWorkflowByName(workflowName)
 
 		if err != nil {
@@ -79,54 +79,99 @@ func createServiceRequestHandler() gin.HandlerFunc {
 		response := prepareServiceRequestResponse(serviceReq)
 		serviceRequestHistogram.Observe(time.Since(startTime).Seconds())
 
-		//msg := <-services.GetServiceRequestChannel()
-		//println(msg.ID.String())
+		to := time.After(15 * time.Second)
+		done := make(chan bool, 1)
 
-		var wg sync.WaitGroup
+		var stepsStatusResponse *models.ServiceRequestStatusResponse = nil
 
-		wg.Add(1)
-
+		statusCode := http.StatusInternalServerError
+		fmt.Println("Начало вставки элементов")
 		go func() {
-			pass := false
-			var stepsStatusResponse *models.ServiceRequestStatusResponse = nil
-			for pass != true {
-				serviceRequest, err := services.FindServiceRequestByID(response.ID)
-				if err != nil {
-					c.JSON(http.StatusBadRequest, models.CreateErrorResponse(http.StatusBadRequest, err.Error()))
+			defer fmt.Println("Выход из горутины")
+			for {
+				select {
+				case <-to:
+					fmt.Println("Время истекло")
+					done <- true
 					return
-				}
-				workflow, err := services.FindWorkflowByName(serviceRequest.WorkflowName)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, models.CreateErrorResponse(http.StatusInternalServerError, err.Error()))
-					return
-				}
-				stepsStatues, err := services.FindStepStatusByServiceRequestID(response.ID)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, models.CreateErrorResponse(http.StatusInternalServerError, err.Error()))
-					return
-				}
-				stepsStatusResponse = services.PrepareStepStatusResponse(response.ID, workflow, stepsStatues)
-				pass = stepsStatusResponse.Status != models.StatusInprogress && stepsStatusResponse.Status != models.StatusNew && stepsStatusResponse.Status != ""
-			}
+				default:
+					serviceRequest, _ := services.FindServiceRequestByID(response.ID)
+					workflow, _ := services.FindWorkflowByName(serviceRequest.WorkflowName)
+					stepsStatues, _ := services.FindStepStatusByServiceRequestID(response.ID)
+					stepsStatusResponse = services.PrepareStepStatusResponse(response.ID, workflow, stepsStatues)
+					if stepsStatusResponse.Status != models.StatusInprogress && stepsStatusResponse.Status != models.StatusNew && stepsStatusResponse.Status != "" {
+						done <- true
+					}
 
-			m, _ := json.Marshal(stepsStatusResponse)
+				}
+			}
+		}()
+
+		<-done
+		fmt.Printf("Получилось вставить элементов\n")
+
+		if stepsStatusResponse.Status == models.StatusCompleted {
+			statusCode = http.StatusOK
+		} else if stepsStatusResponse.Status == models.StatusFailed {
+			statusCode = http.StatusBadRequest
+		}
+
+		c.JSON(statusCode, stepsStatusResponse)
+
+		/*	m, _ := json.Marshal(stepsStatusResponse)
 			println(string(m))
 
-			statusCode := http.StatusAccepted
+			statusCode := http.StatusOK
 			if stepsStatusResponse.Status == models.StatusFailed {
 				statusCode = http.StatusBadRequest
 			}
 
-			c.JSON(statusCode, stepsStatusResponse)
+			c.JSON(statusCode, stepsStatusResponse)*/
 
-			wg.Done()
-		}()
+		/*		var wg sync.WaitGroup
 
-		// Block here until the above goroutine completes
-		wg.Wait()
-		fmt.Println("All goroutines have completed!")
+				wg.Add(1)
 
-		//c.JSON(http.StatusOK, response)
+				go func() {
+					pass := false
+					var stepsStatusResponse *models.ServiceRequestStatusResponse = nil
+					for pass != true {
+						serviceRequest, err := services.FindServiceRequestByID(response.ID)
+						if err != nil {
+							c.JSON(http.StatusBadRequest, models.CreateErrorResponse(http.StatusBadRequest, err.Error()))
+							return
+						}
+						workflow, err := services.FindWorkflowByName(serviceRequest.WorkflowName)
+						if err != nil {
+							c.JSON(http.StatusInternalServerError, models.CreateErrorResponse(http.StatusInternalServerError, err.Error()))
+							return
+						}
+						stepsStatues, err := services.FindStepStatusByServiceRequestID(response.ID)
+						if err != nil {
+							c.JSON(http.StatusInternalServerError, models.CreateErrorResponse(http.StatusInternalServerError, err.Error()))
+							return
+						}
+						stepsStatusResponse = services.PrepareStepStatusResponse(response.ID, workflow, stepsStatues)
+						pass = stepsStatusResponse.Status != models.StatusInprogress && stepsStatusResponse.Status != models.StatusNew && stepsStatusResponse.Status != ""
+					}
+
+					m, _ := json.Marshal(stepsStatusResponse)
+					println(string(m))
+
+					statusCode := http.StatusAccepted
+					if stepsStatusResponse.Status == models.StatusFailed {
+						statusCode = http.StatusBadRequest
+					}
+
+					c.JSON(statusCode, stepsStatusResponse)
+
+					wg.Done()
+				}()
+
+				// Block here until the above goroutine completes
+				wg.Wait()
+				fmt.Println("All goroutines have completed!")
+		*/
 	}
 }
 

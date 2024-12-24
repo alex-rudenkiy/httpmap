@@ -4,6 +4,8 @@ import (
 	"clamp-core/models"
 	"clamp-core/repository"
 	"clamp-core/utils"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -47,9 +49,9 @@ func SaveStepStatus(stepStatusReq *models.StepsStatus) (*models.StepsStatus, err
 func FindStepStatusByServiceRequestID(serviceRequestID uuid.UUID) ([]*models.StepsStatus, error) {
 	log.Debugf("Find step statues by request id : %s ", serviceRequestID)
 	stepsStatuses, err := repository.GetDB().FindStepStatusByServiceRequestID(serviceRequestID)
-	if err != nil {
+	if stepsStatuses == nil || err != nil {
 		log.Errorf("No record found with given service request id %s", serviceRequestID)
-		return []*models.StepsStatus{}, err
+		return []*models.StepsStatus{}, errors.New(fmt.Sprintf("No record found with given service request id %s", serviceRequestID))
 	}
 	return stepsStatuses, err
 }

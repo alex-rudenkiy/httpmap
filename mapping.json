@@ -6,23 +6,22 @@
       "name": "user_authentication",
       "mode": "HTTP",
       "val": {
-        "method": "POST",
-        "url": "https://dummyjson.com/products/add"
+        "method": "GET",
+        "url": "https://dummyjson.com/products/12"
       }
     },
     {
       "name": "user_authorization2",
       "mode": "HTTP",
-      "transform": false,
+      "transform" : false,
       "requestTransform": {
-        "spec": {
-          "username": "user_authentication.response.username",
-          "userId": "user_authentication.response.id"
+        "spec":{
+          "id": "user_authentication.response.id"
         }
       },
       "val": {
         "method": "POST",
-        "url": "https://1dummyjson.com/products/add"
+        "url": "http://echo.free.beeceptor.com/sample-request?author=beeceptor"
       }
     }
   ]

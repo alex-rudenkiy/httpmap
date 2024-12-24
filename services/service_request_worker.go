@@ -28,7 +28,8 @@ var (
 )
 var (
 	serviceRequestChannel chan models.ServiceRequest
-	singletonOnce         sync.Once
+
+	singletonOnce sync.Once
 )
 
 func createServiceRequestChannel() chan models.ServiceRequest {
@@ -64,7 +65,7 @@ func executeWorkflow(serviceReq *models.ServiceRequest, prefix string) {
 	log.Debugf("%s Started processing service request id %s", prefix, serviceReq.ID)
 	start := time.Now()
 	workflow, err := FindWorkflowByName(serviceReq.WorkflowName)
-	println("executeWorkflow :)")
+	//println("executeWorkflow :)")
 
 	if err == nil {
 		lastStep := workflow.Steps[len(workflow.Steps)-1]
@@ -107,7 +108,7 @@ func executeWorkflowSteps(workflow *models.Workflow, prefix string, serviceReque
 	}
 
 	for i := range workflow.Steps[executeStepsFromIndex:] {
-		println(i)
+		//println(i)
 		step := &workflow.Steps[i]
 		ComputeRequestToCurrentStepInContext(workflow, step, &requestContext, executeStepsFromIndex+i, stepRequestPayload)
 		err := ExecuteWorkflowStep(step, requestContext, prefix)
